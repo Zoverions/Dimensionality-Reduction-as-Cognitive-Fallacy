@@ -1,17 +1,19 @@
-# @title CRG Toy Model Ablation Suite (Normalized)
+# @title CRG Toy Model Ablation Suite (Normalized, 2σ Threshold)
+# Updated: falsification threshold upgraded to ±2σ per revised paper draft.
 import numpy as np
 from scipy.spatial import cKDTree
 from scipy.stats import entropy
 from scipy.sparse import lil_matrix, csr_matrix
 import matplotlib.pyplot as plt
 
-# --- CONFIGURATION (Scaled down for demo) ---
-N_NODES = 800        # Reduced from 1500
+# --- CONFIGURATION ---
+N_NODES = 1500
 BOX_SIZE = 100.0
-N_SCALES = 15        # Reduced from 30
-N_BOOTSTRAP = 5      # Reduced from 15
+N_SCALES = 30
+N_BOOTSTRAP = 15
 R_MIN, R_MAX = 2.0, 25.0
 EPS = 1e-12
+SIGMA_THRESH = 2.0   # Updated: 2σ falsification threshold
 
 # --- 1. TOPOLOGY GENERATORS ---
 def generate_poisson(N, L):
@@ -133,13 +135,15 @@ def plot_ablation(results):
         null_data = results[f"{name} (Null)"]
         color = colors[name.split()[0]]
 
-        ax[0].fill_between(data['r'], null_data['beta'] - null_data['std'], null_data['beta'] + null_data['std'], color=color, alpha=0.15, label=f"{name} Null ±1SD")
+        lower = null_data['beta'] - SIGMA_THRESH * null_data['std']
+        upper = null_data['beta'] + SIGMA_THRESH * null_data['std']
+        ax[0].fill_between(data['r'], lower, upper, color=color, alpha=0.15, label=f"{name} Null ±{SIGMA_THRESH:.0f}σ")
         ax[0].plot(data['r'], data['beta'], color=color, linewidth=2, label=f"{name} Real")
 
     ax[0].axhline(0, color='black', linestyle='--', alpha=0.5)
     ax[0].set_xlabel("Linking Length (r)")
     ax[0].set_ylabel("Normalized Causal Flow (Beta_C)")
-    ax[0].set_title("Normalized Causal Resurgence Across Topologies")
+    ax[0].set_title(f"Normalized Causal Resurgence Across Topologies (±{SIGMA_THRESH:.0f}σ)")
     ax[0].legend(loc='best', fontsize=8)
     ax[0].grid(True, alpha=0.3)
 
@@ -149,13 +153,14 @@ def plot_ablation(results):
         null_mean = results[f"{name} (Null)"]['beta']
         null_std = results[f"{name} (Null)"]['std']
         idx = np.argmax(results[name]['beta'])
-        significant = "Yes" if peak_beta > (null_mean[idx] + null_std[idx]) else "No"
+        threshold = null_mean[idx] + SIGMA_THRESH * null_std[idx]
+        significant = "Yes" if peak_beta > threshold else "No"
         peaks.append(peak_beta)
-        names_short.append(f"{name.split()[0]}\n(Sig: {significant})")
+        names_short.append(f"{name.split()[0]}\n(Sig@{SIGMA_THRESH:.0f}σ: {significant})")
 
     ax[1].bar(names_short, peaks, color=['blue', 'orange', 'red'])
     ax[1].set_ylabel("Max Normalized Beta_C")
-    ax[1].set_title("Peak Causal Power by Topology")
+    ax[1].set_title(f"Peak Causal Power by Topology ({SIGMA_THRESH:.0f}σ Threshold)")
     ax[1].grid(True, alpha=0.3, axis='y')
 
     plt.tight_layout()
