@@ -1,4 +1,4 @@
-# @title CRG Toy Model Ablation Suite (Phase 1)
+# @title CRG Toy Model Ablation Suite (Normalized)
 import numpy as np
 from scipy.spatial import cKDTree
 from scipy.stats import entropy
@@ -40,8 +40,8 @@ def generate_filamentary(N, L):
 def assign_masses(N):
     return np.random.lognormal(mean=10, sigma=1.5, size=N)
 
-# --- 2. CORE OPERATORS ---
-def compute_effective_information(pos, mass, r_link, L):
+# --- 2. NORMALIZED CORE OPERATORS ---
+def compute_normalized_effective_information(pos, mass, r_link, L):
     N = len(pos)
     tree = cKDTree(pos, boxsize=L)
     pairs = tree.query_pairs(r_link, output_type='ndarray')
@@ -63,29 +63,32 @@ def compute_effective_information(pos, mass, r_link, L):
     A[j_idxs, i_idxs] = mass[i_idxs] / (dists**2)
 
     A = A.tocsr()
-    row_sums = np.array(A.sum(axis=1)).flatten()
-    row_sums[row_sums == 0] = 1.0
+    degrees = np.array(A.sum(axis=1)).flatten()
+    degrees[degrees == 0] = 1.0
 
-    data = A.data / np.repeat(row_sums, np.diff(A.indptr))
-    W = csr_matrix((data, A.indices, A.indptr), shape=A.shape)
+    W = A.multiply((1.0 / degrees)[:, np.newaxis]).tocsr()
 
-    row_entropies = []
+    row_entropies = np.zeros(N)
     for i in range(N):
         start, end = W.indptr[i], W.indptr[i+1]
         if end > start:
-            row_entropies.append(entropy(W.data[start:end] + EPS))
-        else:
-            row_entropies.append(0.0)
-    H_noise = np.mean(row_entropies)
+            row_entropies[i] = entropy(W.data[start:end] + EPS)
 
+    H_noise = np.mean(row_entropies)
     col_means = np.array(W.mean(axis=0)).flatten()
     H_eff = entropy(col_means + EPS)
 
-    return H_eff - H_noise
+    EI_raw = H_eff - H_noise
 
-def compute_beta_curve(pos, mass, L):
+    # INFORMATION-THEORETIC NORMALIZATION
+    node_probabilities = degrees / np.sum(degrees)
+    H_rw = entropy(node_probabilities + EPS)
+
+    return EI_raw / H_rw if H_rw > 0 else 0.0
+
+def compute_normalized_beta_curve(pos, mass, L):
     r_vals = np.linspace(R_MIN, R_MAX, N_SCALES)
-    ei_vals = [compute_effective_information(pos, mass, r, L) for r in r_vals]
+    ei_vals = [compute_normalized_effective_information(pos, mass, r, L) for r in r_vals]
     beta_vals = np.gradient(np.array(ei_vals), np.log(r_vals))
     return r_vals, np.array(ei_vals), beta_vals
 
@@ -97,19 +100,19 @@ def run_ablation_study():
         "Filamentary (Web)": generate_filamentary
     }
     results = {}
-    print("Starting Ablation Study...")
+    print("Starting Normalized Ablation Study...")
     for name, gen_func in topologies.items():
         print(f"Processing {name}...")
         pos = gen_func(N_NODES, BOX_SIZE)
         mass = assign_masses(N_NODES)
 
-        r, ei, beta = compute_beta_curve(pos, mass, BOX_SIZE)
+        r, ei, beta = compute_normalized_beta_curve(pos, mass, BOX_SIZE)
         results[name] = {'r': r, 'beta': beta, 'ei': ei}
 
         beta_nulls = []
         for b in range(N_BOOTSTRAP):
             m_shuffle = np.random.permutation(mass)
-            _, _, b_null = compute_beta_curve(pos, m_shuffle, BOX_SIZE)
+            _, _, b_null = compute_normalized_beta_curve(pos, m_shuffle, BOX_SIZE)
             beta_nulls.append(b_null)
 
         results[f"{name} (Null)"] = {
@@ -135,8 +138,8 @@ def plot_ablation(results):
 
     ax[0].axhline(0, color='black', linestyle='--', alpha=0.5)
     ax[0].set_xlabel("Linking Length (r)")
-    ax[0].set_ylabel("Causal Flow (Beta_C)")
-    ax[0].set_title("Causal Resurgence Across Topologies")
+    ax[0].set_ylabel("Normalized Causal Flow (Beta_C)")
+    ax[0].set_title("Normalized Causal Resurgence Across Topologies")
     ax[0].legend(loc='best', fontsize=8)
     ax[0].grid(True, alpha=0.3)
 
@@ -151,7 +154,7 @@ def plot_ablation(results):
         names_short.append(f"{name.split()[0]}\n(Sig: {significant})")
 
     ax[1].bar(names_short, peaks, color=['blue', 'orange', 'red'])
-    ax[1].set_ylabel("Max Beta_C")
+    ax[1].set_ylabel("Max Normalized Beta_C")
     ax[1].set_title("Peak Causal Power by Topology")
     ax[1].grid(True, alpha=0.3, axis='y')
 
