@@ -127,7 +127,15 @@ See `tng_pipeline.py`. This script implements the normalized temporal CRG sweep 
 python tng_pipeline.py
 ```
 
-### Appendix B: Synthetic Topology Ablation Suite
+### Appendix B: The Self-Contained Toy Model
+
+See `causal_resurgence_toy.py`. A simplified demonstration of the core concept on a single filamentary structure, producing `figure1.png`. Runnable immediately without an API key.
+
+```bash
+python causal_resurgence_toy.py
+```
+
+### Appendix C: Synthetic Topology Ablation Suite (Supplementary)
 
 See `ablation_study.py`. This script validates that the $\beta_C$ operator successfully isolates Filamentary structures from Poisson noise and isolated Gaussian clusters.
 
@@ -136,11 +144,3 @@ python ablation_study.py
 ```
 
 Outputs `ablation_results.png`.
-
-### Legacy / Basic Demo
-
-See `causal_resurgence_toy.py`. A simplified demonstration of the core concept on a single filamentary structure, producing `figure1.png`.
-
-```bash
-python causal_resurgence_toy.py
-```
