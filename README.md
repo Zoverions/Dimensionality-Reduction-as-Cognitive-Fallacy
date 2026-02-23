@@ -64,3 +64,21 @@ The script outputs `figure1.png`, which plots $\beta_C$ against the linking leng
 - **Gray Band**: The "Sponge Topology Window", where the network is percolating but not fully connected, often where interesting topological phase transitions occur.
 
 If the Green line significantly exceeds the Red band, we have successfully detected Causal Resurgence in the toy model.
+
+## Peer Review & Ablation Study
+
+Following a formal peer review, an ablation study was conducted to compare three distinct topological regimes. This experiment tests whether the "filamentary" structure of the cosmic web is uniquely capable of generating Causal Resurgence, compared to simpler geometries.
+
+To run the ablation study:
+
+```bash
+python ablation_study.py
+```
+
+This generates `ablation_results.png`, comparing:
+
+1.  **Random (Poisson) Topology**: Points uniformly distributed in space. Represents a structureless universe.
+2.  **Clustered (Gaussian Mixture) Topology**: Points grouped in discrete blobs. Represents a universe with gravity but no large-scale filamentary network.
+3.  **Filamentary (Cosmic Web Proxy)**: The sinusoidal structure used in the main toy model.
+
+**Hypothesis**: The Filamentary topology should exhibit the strongest positive spike in $\beta_C$, indicating that the interconnected "web" structure is the primary driver of causal emergence, rather than simple clustering or random distribution.
