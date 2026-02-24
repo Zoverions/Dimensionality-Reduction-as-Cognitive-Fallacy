@@ -1,0 +1,36 @@
+Double-Difference Analysis Notes
+=================================
+
+Key observations from the figure:
+
+1. LEFT PANEL (Absolute EI_norm):
+   - Real data (solid lines): z=0 (blue) shows higher EI_norm at 2 cMpc/h (~0.27) 
+     than z=1 (orange, ~0.15). Both converge to ~0.08 above 6 cMpc/h.
+   - RGG baselines (dotted): Poisson points show MUCH higher EI_norm at large scales
+     (peaking at 1.5-2.5), because uniform random points create denser graphs at 
+     those linking lengths. This confirms the real cosmic web is NOT a random distribution.
+   - The real data EI_norm saturates quickly because N=1000 in a 302 cMpc/h box means 
+     mean separation ~30 cMpc/h. At linking lengths >6 cMpc/h, the graph is already 
+     nearly fully connected.
+
+2. RIGHT PANEL (Double Difference):
+   - Green line (vs Mass-Shuffled): Gain is slightly negative (-0.04 at 2 cMpc/h), 
+     then flat near zero. 0/15 scales exceed 2-sigma.
+   - This means: the mass-shuffled null captures essentially ALL of the EI_norm 
+     evolution. The real topology does NOT evolve faster than the null.
+   - Magenta line (vs RGG): Large negative gain, confirming the real web has LESS 
+     EI_norm than Poisson at large scales (expected — clustered structure is sparser).
+
+3. INTERPRETATION:
+   The EI_norm operator at N=1000 does not detect topological evolution beyond what 
+   mass-position correlations already explain. The Double Difference is null.
+   
+   This could mean:
+   a) N=1000 is insufficient statistical power (likely — need 15k on a cluster)
+   b) The EI_norm saturation above 6 cMpc/h eliminates the scale range where 
+      filamentary structure would be detectable
+   c) The operator genuinely does not detect higher-order structure beyond 2-point
+
+   The honest conclusion: at N=1000, the Double Difference test does not support 
+   the claim of secular topological evolution. This is a null result that should be 
+   reported. The test should be repeated at N=15000 on a computational cluster.
