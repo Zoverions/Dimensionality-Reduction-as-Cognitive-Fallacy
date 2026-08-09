@@ -1,5 +1,7 @@
 # Dimensionality Reduction as Cognitive Fallacy: A Topological Hypothesis and Research Proposal
 
+> **Status:** Research proposal and exploratory analysis. No cosmological, cognitive, or metaphysical claim is verified by this repository, and successful code execution would not be empirical confirmation. See [`PORTFOLIO_STATUS.md`](PORTFOLIO_STATUS.md).
+
 **By Zoverions**
 *Independent Researcher in Complexity Theory*
 
